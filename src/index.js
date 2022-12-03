@@ -4,12 +4,11 @@ import Notiflix from 'notiflix';
 import debounce from 'lodash.debounce';
 
 const DEBOUNCE_DELAY = 300;
-const URL = "https://restcountries.com/v3.1/name";
-const searchParams = "fields=name,capital,languages,population,flags";
 const refs = {
     searchBox: document.querySelector("#search-box"),
     list: document.querySelector(".country-list"),
     info: document.querySelector(".country-info"),
+    preloader: document.querySelector(".preloader")
 };
 
 refs.searchBox.addEventListener("input", debounce(onInput, DEBOUNCE_DELAY));
@@ -17,18 +16,43 @@ refs.searchBox.addEventListener("input", debounce(onInput, DEBOUNCE_DELAY));
 
 function onInput(e) {
     e.preventDefault();
+    lockInput();
+    showLoader();
     const country = e.target.value.trim();
-        if (country.length === 0) { 
-            clearData();
-            return;
+    if (country.length === 0) {
+        unlockInput();
+        hideLoader();
+        clearData();
+        return;
     }
-        else fetchCountries(country)
-            .then(renderData)
-            .catch(onFetchError);
-
+    else {
+        fetchCountries(country)
+        .then(renderData)
+            .catch(error => {
+                onFetchError(error);
+                hideLoader();
+            })
+        .finally(unlockInput);
+    }
+    
 };
 
+function lockInput() { 
+    refs.searchBox.setAttribute("disabled", true);
+}
 
+function unlockInput() { 
+    refs.searchBox.removeAttribute("disabled");
+}
+
+function showLoader() { 
+    refs.preloader.classList.add("show");
+}
+
+function hideLoader() { 
+    refs.preloader.classList.remove("show");
+}
+    
 function getWarning() { 
     return Notiflix.Notify.info("Too many matches found. Please enter a more specific name.");
 }
@@ -70,7 +94,6 @@ function onFetchError() {
 }
 
 function renderData(items) {
-    //console.log(items);
     clearData();
     if (items.length >= 10) {
         getWarning();    

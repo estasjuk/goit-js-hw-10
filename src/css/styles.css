@@ -38,3 +38,13 @@ body {
 .country-prop {
   display: inline;
 }
+
+.preloader {
+  display: none;
+}
+
+.show {
+  display: flex;
+  justify-content: center;
+  margin-left: 70px;
+}
