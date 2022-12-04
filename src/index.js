@@ -15,72 +15,51 @@ refs.searchBox.addEventListener("input", debounce(onInput, DEBOUNCE_DELAY));
 
 function onInput(e) {
     e.preventDefault();
-    lockInput();
     const country = e.target.value.trim();
-    if (country.length === 0) {
-        unlockInput();
-        clearData();
+    clearData();
+    if (!country) {                 //the same: country.length === 0
         return;
     }
-    else {
-        showLoader();
+        showLoader("add");
         fetchCountries(country)
         .then(renderData)
         .catch(error => {
             onFetchError(error);
             
-        })
-        .finally(unlockInput);
-    }
-    
+        })   
 };
 
-function lockInput() { 
-    refs.searchBox.setAttribute("disabled", true);
+function showLoader(method) { 
+    refs.preloader.classList[method]("show");
 };
 
-function unlockInput() { 
-    refs.searchBox.removeAttribute("disabled");
-};
-
-function showLoader() { 
-    refs.preloader.classList.add("show");
-};
-
-function hideLoader() { 
-    refs.preloader.classList.remove("show");
-};
-    
 function getWarning() { 
     return Notiflix.Notify.info("Too many matches found. Please enter a more specific name.");
 };
 
 function getMarkupOfCountryList(countries) { 
-    const markupList = countries
+    return countries
             .map(country => {
                 return `<li>
     <div class="box"><img src="${country.flags.png}" alt="flag ${country.name.official}" width="120" /><h2>${country.name.official}</h2></div>
     </li>`;
             })
-            .join('');
-        refs.list.insertAdjacentHTML("beforeend", markupList);
+            .join('');  
 };
 
 function getMarkupOfCountryCard(countries) { 
-    const markupCountryCard = countries
+    return countries
             .map(country => {
                 return `<li>
     <div class="box"><img src="${country.flags.png}" alt="flag ${country.name.official}" width="120" /><h2>${country.name.official}</h2></div>
     <div class="country-info">
     <div class="prop"><h3 class="country-prop">Capital: </h3><span>${country.capital}</span></div>
     <div class="prop"><h3 class="country-prop">Population: </h3><span>${country.population}</span></div>
-    <div class="prop"><h3 class="country-prop">Languages: </h3><span>${Object.values(country.languages)}</span></div>
+    <div class="prop"><h3 class="country-prop">Languages: </h3><span>${Object.values(country.languages).join(", ")}</span></div>
     </div>
     </li>`;
             })
             .join('');
-        refs.list.insertAdjacentHTML("beforeend", markupCountryCard);
-
 };
 
 function clearData() { 
@@ -89,24 +68,22 @@ function clearData() {
 };
 
 function onFetchError() { 
- return Notiflix.Notify.failure("Oops, there is no country with that name");
+    showLoader("remove");
+    return Notiflix.Notify.failure("Oops, there is no country with that name");
 };
 
 function renderData(items) {
-    clearData();
-    hideLoader();
+    showLoader("remove");
     
     if (items.length >= 10) {
         getWarning();
-        refs.searchBox.focus();
     }
     else if (items.length >= 2 && items.length < 10) {
-        getMarkupOfCountryList(items);
-        refs.searchBox.focus();
+        const markupList = getMarkupOfCountryList(items);
+        refs.list.insertAdjacentHTML("beforeend", markupList);
     }
     else {
-        getMarkupOfCountryCard(items);
-        refs.searchBox.focus();
+        const markupCountryCard = getMarkupOfCountryCard(items);
+        refs.list.insertAdjacentHTML("beforeend", markupCountryCard);
     }
-    
 };
