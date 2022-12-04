@@ -13,25 +13,23 @@ const refs = {
 
 refs.searchBox.addEventListener("input", debounce(onInput, DEBOUNCE_DELAY));
 
-
 function onInput(e) {
     e.preventDefault();
     lockInput();
-    showLoader();
     const country = e.target.value.trim();
     if (country.length === 0) {
         unlockInput();
-        hideLoader();
         clearData();
         return;
     }
     else {
+        showLoader();
         fetchCountries(country)
         .then(renderData)
-            .catch(error => {
-                onFetchError(error);
-                hideLoader();
-            })
+        .catch(error => {
+            onFetchError(error);
+            
+        })
         .finally(unlockInput);
     }
     
@@ -39,23 +37,23 @@ function onInput(e) {
 
 function lockInput() { 
     refs.searchBox.setAttribute("disabled", true);
-}
+};
 
 function unlockInput() { 
     refs.searchBox.removeAttribute("disabled");
-}
+};
 
 function showLoader() { 
     refs.preloader.classList.add("show");
-}
+};
 
 function hideLoader() { 
     refs.preloader.classList.remove("show");
-}
+};
     
 function getWarning() { 
     return Notiflix.Notify.info("Too many matches found. Please enter a more specific name.");
-}
+};
 
 function getMarkupOfCountryList(countries) { 
     const markupList = countries
@@ -66,7 +64,7 @@ function getMarkupOfCountryList(countries) {
             })
             .join('');
         refs.list.insertAdjacentHTML("beforeend", markupList);
-}
+};
 
 function getMarkupOfCountryCard(countries) { 
     const markupCountryCard = countries
@@ -83,25 +81,32 @@ function getMarkupOfCountryCard(countries) {
             .join('');
         refs.list.insertAdjacentHTML("beforeend", markupCountryCard);
 
-}
+};
 
 function clearData() { 
     refs.list.innerHTML = "";
-}
+    refs.searchBox.focus();
+};
 
 function onFetchError() { 
  return Notiflix.Notify.failure("Oops, there is no country with that name");
-}
+};
 
 function renderData(items) {
     clearData();
+    hideLoader();
+    
     if (items.length >= 10) {
-        getWarning();    
+        getWarning();
+        refs.searchBox.focus();
     }
     else if (items.length >= 2 && items.length < 10) {
-        getMarkupOfCountryList(items)
+        getMarkupOfCountryList(items);
+        refs.searchBox.focus();
     }
     else {
-        getMarkupOfCountryCard(items)
+        getMarkupOfCountryCard(items);
+        refs.searchBox.focus();
     }
-}
+    
+};

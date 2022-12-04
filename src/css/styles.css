@@ -19,7 +19,7 @@ body {
   margin-bottom: 16px;
 }
 
-#search-box:focus-within {
+#search-box:focus {
    background-color: rgb(238, 224, 226);
 }
 
